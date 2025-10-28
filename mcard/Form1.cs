@@ -8,6 +8,44 @@ namespace mcard
 {
     public partial class Form1 : Form
     {
+        // === NAGRYWANIE MCI ===
+        private bool isRecording = false;
+        private string recordedFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "nagranie.wav");
+
+        private void StartRecording()
+        {
+            try
+            {
+                mciSendString("close capture", null, 0, IntPtr.Zero);
+                mciSendString("open new type waveaudio alias capture", null, 0, IntPtr.Zero);
+                mciSendString("record capture", null, 0, IntPtr.Zero);
+                isRecording = true;
+                MessageBox.Show("Nagrywanie rozpoczęte...");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Błąd nagrywania: " + ex.Message);
+            }
+        }
+
+        private void StopRecording()
+        {
+            if (!isRecording) return;
+
+            try
+            {
+                mciSendString("stop capture", null, 0, IntPtr.Zero);
+                mciSendString($"save capture \"{recordedFile}\"", null, 0, IntPtr.Zero);
+                mciSendString("close capture", null, 0, IntPtr.Zero);
+                isRecording = false;
+                MessageBox.Show($"Nagrywanie zakończone. Zapisano jako:\n{recordedFile}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Błąd zapisu: " + ex.Message);
+            }
+        }
+
         private string selectedFile = "";
 
         public Form1()
@@ -36,6 +74,11 @@ namespace mcard
         // === START ===
         private void button1_Click(object sender, EventArgs e)
         {
+            if (checkBox1.Checked)
+            {
+                StartRecording();
+                return;
+            }
             if (string.IsNullOrEmpty(selectedFile))
             {
                 MessageBox.Show("Najpierw wybierz plik!");
@@ -66,6 +109,11 @@ namespace mcard
         // === STOP ===
         private void button2_Click(object sender, EventArgs e)
         {
+            if (checkBox1.Checked)
+            {
+                StopRecording();
+                return;
+            }
             if (radioButton1.Checked) // PlaySound
             {
                 PlaySound(null, IntPtr.Zero, SND_PURGE);
