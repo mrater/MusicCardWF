@@ -19,9 +19,7 @@ namespace mcard
                 mciSendString("close capture", null, 0, IntPtr.Zero);
                 mciSendString("open new type waveaudio alias capture", null, 0, IntPtr.Zero);
                 mciSendString("record capture", null, 0, IntPtr.Zero);
-                isRecording = true;
-                MessageBox.Show("Nagrywanie rozpoczęte...");
-            }
+                isRecording = true;            }
             catch (Exception ex)
             {
                 MessageBox.Show("Błąd nagrywania: " + ex.Message);
@@ -79,11 +77,6 @@ namespace mcard
                 StartRecording();
                 return;
             }
-            if (string.IsNullOrEmpty(selectedFile))
-            {
-                MessageBox.Show("Najpierw wybierz plik!");
-                return;
-            }
 
             if (radioButton1.Checked) // 🔹 PlaySound
             {
@@ -101,7 +94,6 @@ namespace mcard
             }
             else if (radioButton4.Checked) // 🔹 DirectSound
             {
-                MessageBox.Show("DirectSound: tu dodaj swoją implementację DirectSoundStart()");
                 // np. DirectSoundStart(selectedFile);
             }
         }
@@ -129,7 +121,7 @@ namespace mcard
             }
             else if (radioButton4.Checked)
             {
-                MessageBox.Show("DirectSound: tu dodaj DirectSoundStop()");
+                //DirectSound Stop
             }
         }
 
