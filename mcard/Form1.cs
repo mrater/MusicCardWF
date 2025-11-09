@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using SharpDX.DirectSound;
 using System.Threading.Tasks;
 using SharpDX;
-using SharpDX.DirectSound;
 using SharpDX.Multimedia;
 
 namespace mcard
@@ -17,6 +16,8 @@ namespace mcard
 
         private SecondarySoundBuffer _directSoundBuffer;
         private DirectSound _directSoundDevice;
+        private bool isDirectSoundPaused = false;
+        private bool isMciPaused = false;
 
 
         // === NAGRYWANIE MCI ===
@@ -80,7 +81,7 @@ namespace mcard
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 selectedFile = openFileDialog1.FileName;
-                //axWindowsMediaPlayer1.URL = selectedFile;
+                axWindowsMediaPlayer1.URL = selectedFile;
             }
         }
 
@@ -112,10 +113,15 @@ namespace mcard
                 mciSendString("close myAudio", null, 0, IntPtr.Zero);
                 mciSendString($"open \"{selectedFile}\" alias myAudio", null, 0, IntPtr.Zero);
                 mciSendString("play myAudio", null, 0, IntPtr.Zero);
+                isMciPaused = false;
             }
             else if (radioButton4.Checked) //  DirectSound
             {
                 DirectSoundPlayWavFileAsync();
+            }
+            else if (radioButton5.Checked) // Windows Media Player
+            {
+                axWindowsMediaPlayer1.Ctlcontrols.play();
             }
         }
 
@@ -139,11 +145,15 @@ namespace mcard
             {
                 mciSendString("stop myAudio", null, 0, IntPtr.Zero);
                 mciSendString("close myAudio", null, 0, IntPtr.Zero);
+                isMciPaused = false;
             }
             else if (radioButton4.Checked)
             {
                 DirectSoundStopPlaybackAsync();
-                // MessageBox.Show("DirectSound: tu dodaj DirectSoundStop()");
+            }
+            else if (radioButton5.Checked) // Windows Media Player
+            {
+                axWindowsMediaPlayer1.Ctlcontrols.stop();
             }
         }
 
@@ -152,11 +162,30 @@ namespace mcard
         {
             if (radioButton3.Checked) // MCI
             {
-                mciSendString("pause myAudio", null, 0, IntPtr.Zero);
+                if (isMciPaused)
+                {
+                    mciSendString("resume myAudio", null, 0, IntPtr.Zero);
+                }
+                else
+                {
+                    mciSendString("pause myAudio", null, 0, IntPtr.Zero);
+                }
+                isMciPaused = !isMciPaused;
             }
-            else if (radioButton4.Checked)
+            else if (radioButton4.Checked) // DirectSound
             {
-                MessageBox.Show("DirectSound: tu dodaj DirectSoundPause()");
+                DirectSoundPauseResume();
+            }
+            else if (radioButton5.Checked) // Windows Media Player
+            {
+                if (axWindowsMediaPlayer1.playState == WMPLib.WMPPlayState.wmppsPlaying)
+                {
+                    axWindowsMediaPlayer1.Ctlcontrols.pause();
+                }
+                else if (axWindowsMediaPlayer1.playState == WMPLib.WMPPlayState.wmppsPaused)
+                {
+                    axWindowsMediaPlayer1.Ctlcontrols.play();
+                }
             }
             else
             {
@@ -320,6 +349,11 @@ namespace mcard
         // DirectSound
         private async void DirectSoundPlayWavFileAsync()
         {
+            if (_directSoundBuffer != null)
+            {
+                await DirectSoundStopPlaybackAsync();
+            }
+            isDirectSoundPaused = false;
             
             Stream stream = File.OpenRead(selectedFile); 
             var reader = new SoundStream(stream);
@@ -327,7 +361,7 @@ namespace mcard
 
             var bufferDescription = new SoundBufferDescription
             {
-                Flags = BufferFlags.ControlVolume | (checkBox1.Checked == true ? BufferFlags.ControlEffects : 0),
+                Flags = BufferFlags.ControlVolume | BufferFlags.GlobalFocus | (checkBox1.Checked == true ? BufferFlags.ControlEffects : 0),
                 BufferBytes = (int)reader.Length,
                 Format = format
             };
@@ -348,14 +382,24 @@ namespace mcard
             _directSoundBuffer.Write(audioData, 0, LockFlags.None);
 
 
-            _directSoundBuffer.Play(0, PlayFlags.None);
+            _directSoundBuffer.Play(0, PlayFlags.Looping);
 
-            // Poczekaj a  si  sko czy (w przybli eniu)
-            await Task.Delay((int)(reader.Length / (float)format.AverageBytesPerSecond * 1000) + 500);
-            await DirectSoundStopPlaybackAsync();
+            // Usunięto Task.Delay, aby umożliwić interakcję podczas odtwarzania
+        }
 
+        private void DirectSoundPauseResume()
+        {
+            if (_directSoundBuffer == null) return;
 
-            
+            if (isDirectSoundPaused)
+            {
+                _directSoundBuffer.Play(0, PlayFlags.Looping); // Wznów odtwarzanie w pętli
+            }
+            else
+            {
+                _directSoundBuffer.Stop(); // Zatrzymaj (spauzuj)
+            }
+            isDirectSoundPaused = !isDirectSoundPaused;
         }
 
         private async Task DirectSoundStopPlaybackAsync()
@@ -366,8 +410,9 @@ namespace mcard
                 _directSoundBuffer.Dispose();
                 _directSoundBuffer = null;
             }
+            isDirectSoundPaused = false;
 
-            await Task.Delay(100);
+            await Task.CompletedTask;
         }
 
     }
