@@ -361,7 +361,7 @@ namespace mcard
 
             var bufferDescription = new SoundBufferDescription
             {
-                Flags = BufferFlags.ControlVolume | BufferFlags.GlobalFocus | (checkBox1.Checked == true ? BufferFlags.ControlEffects : 0),
+                Flags = BufferFlags.ControlVolume | BufferFlags.GlobalFocus | (checkBoxEcho.Checked ? BufferFlags.ControlEffects : 0),
                 BufferBytes = (int)reader.Length,
                 Format = format
             };
@@ -369,10 +369,10 @@ namespace mcard
             _directSoundBuffer = new SecondarySoundBuffer(_directSoundDevice, bufferDescription);
 
 
-            if (checkBox1.Checked == true)
+            if (checkBoxEcho.Checked)
             {
-                Guid[] echo = { new Guid("EF3E932C-D40B-4F51-8CCF-3F98F1B29D5D") };
-                _directSoundBuffer.SetEffect(echo);
+                Guid[] echoGuid = { new Guid("EF3E932C-D40B-4F51-8CCF-3F98F1B29D5D") };
+                _directSoundBuffer.SetEffect(echoGuid);
             }
 
 

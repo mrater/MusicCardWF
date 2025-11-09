@@ -41,6 +41,7 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
+            this.checkBoxEcho = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -155,11 +156,22 @@
             this.radioButton5.Text = "Windows Media Player";
             this.radioButton5.UseVisualStyleBackColor = true;
             // 
+            // checkBoxEcho
+            // 
+            this.checkBoxEcho.AutoSize = true;
+            this.checkBoxEcho.Location = new System.Drawing.Point(255, 74);
+            this.checkBoxEcho.Name = "checkBoxEcho";
+            this.checkBoxEcho.Size = new System.Drawing.Size(113, 17);
+            this.checkBoxEcho.TabIndex = 11;
+            this.checkBoxEcho.Text = "Echo (DirectSound)";
+            this.checkBoxEcho.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(367, 225);
+            this.Controls.Add(this.checkBoxEcho);
             this.Controls.Add(this.radioButton5);
             this.Controls.Add(this.axWindowsMediaPlayer1);
             this.Controls.Add(this.checkBox1);
@@ -193,5 +205,6 @@
         private System.Windows.Forms.CheckBox checkBox1;
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
         private System.Windows.Forms.RadioButton radioButton5;
+        private System.Windows.Forms.CheckBox checkBoxEcho;
     }
 }
